@@ -1,0 +1,9 @@
+ros-hydro-motoman-sia10d-support (0.3.1-0quantal) quantal; urgency=high
+
+  * Synchronized versions for bloom release
+  * Added auto-generated sia10d, added urdf/meshes
+  * Contributors: Shaun Edwards
+
+ --  <shaun.edwards@gmail.com>  Thu, 30 Jan 2014 05:00:00 -0000
+
+

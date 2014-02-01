@@ -1,0 +1,18 @@
+ros-hydro-motoman (0.3.2-0precise) precise; urgency=high
+
+  * Added build dependency on roslaunch to support packages
+
+ -- Shaun Edwards <sedwards@swri.org>  Fri, 31 Jan 2014 05:00:00 -0000
+
+ros-hydro-motoman (0.3.1-0precise) precise; urgency=high
+
+  * Synchronized versions for bloom release
+  * Updated motoman meta-package to include new packages
+  * Changed directory name from fs100 to motoman_driver
+    Fix #2 <https://github.com/shaun-edwards/motoman/issues/2>.
+  * rosbuild motoman stack has been converted to catkin metapackage
+  * Contributors: Shaun Edwards, gavanderhoorn, jrgnicho
+
+ -- Shaun Edwards <sedwards@swri.org>  Thu, 30 Jan 2014 05:00:00 -0000
+
+

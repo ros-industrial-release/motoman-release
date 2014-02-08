@@ -1,0 +1,12 @@
+Source: ros-hydro-motoman-sia20d-moveit-config
+Section: misc
+Priority: extra
+Maintainer: MoveIt Setup Assistant <assistant@moveit.ros.org>
+Build-Depends: debhelper (>= 7.0.50~), ros-hydro-catkin, ros-hydro-motoman-sia20d-support
+Homepage: http://moveit.ros.org/
+Standards-Version: 3.9.2
+
+Package: ros-hydro-motoman-sia20d-moveit-config
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-hydro-joint-state-publisher, ros-hydro-motoman-sia20d-support, ros-hydro-moveit-planners-ompl, ros-hydro-moveit-ros-move-group, ros-hydro-moveit-ros-visualization, ros-hydro-robot-state-publisher, ros-hydro-xacro
+Description: An automatically generated package with all the configuration and launch files for using the motoman_sia20d with the MoveIt Motion Planning Framework

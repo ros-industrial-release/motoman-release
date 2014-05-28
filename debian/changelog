@@ -1,0 +1,23 @@
+ros-hydro-motoman-sia20d-support (0.3.3-1raring) raring; urgency=high
+
+  * No changes
+
+ --  <shaun.edwards@gmail.com>  Fri, 07 Feb 2014 05:00:00 -0000
+
+ros-hydro-motoman-sia20d-support (0.3.2-1raring) raring; urgency=high
+
+  * Added build dependency on roslaunch to address missing roslaunch check missing macro
+  * Contributors: Shaun Edwards
+
+ --  <shaun.edwards@gmail.com>  Fri, 31 Jan 2014 05:00:00 -0000
+
+ros-hydro-motoman-sia20d-support (0.3.1-1raring) raring; urgency=high
+
+  * Synchronized versions for bloom release
+  * Corrected motoman robot name (added motoman prefix)
+  * Added tool0 to sia20.  Matches motoman tool0
+  * Contributors: Shaun Edwards
+
+ -- Shaun Edwards (Southwest Research Institute) <shaun.edwards@gmail.com>  Thu, 30 Jan 2014 05:00:00 -0000
+
+

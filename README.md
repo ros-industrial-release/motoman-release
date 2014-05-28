@@ -1,3 +1,30 @@
+## motoman (hydro) - 0.3.3-1
+
+The packages in the `motoman` repository were released into the `hydro` distro by running `/usr/bin/bloom-release motoman -t hydro -r hydro` on `Wed, 28 May 2014 01:39:21 -0000`
+
+These packages were released:
+- `motoman`
+- `motoman_config`
+- `motoman_driver`
+- `motoman_mh5_support`
+- `motoman_sia10d_support`
+- `motoman_sia20d_moveit_config`
+- `motoman_sia20d_support`
+- `motoman_sia5d_support`
+
+Version of package(s) in repository `motoman`:
+- rosdistro version: `0.3.3-0`
+- old version: `0.3.3-0`
+- new version: `0.3.3-1`
+
+Versions of tools used:
+- bloom version: `0.5.9`
+- catkin_pkg version: `0.2.2`
+- rosdep version: `0.10.27`
+- rosdistro version: `0.3.5`
+- vcstools version: `0.1.35`
+
+
 ## motoman - 0.3.3-0
 
 User `ros@ROS` released the packages in the `motoman` repository by running `/usr/bin/bloom-release motoman --track hydro --rosdistro hydro` on `Sat, 08 Feb 2014 03:06:43 -0000`

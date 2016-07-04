@@ -1,3 +1,35 @@
+## motoman (indigo) - 0.3.5-0
+
+The packages in the `motoman` repository were released into the `indigo` distro by running `/usr/bin/bloom-release motoman --track indigo --rosdistro indigo` on `Mon, 04 Jul 2016 02:19:39 -0000`
+
+These packages were released:
+- `motoman`
+- `motoman_driver`
+- `motoman_mh5_support`
+- `motoman_msgs`
+- `motoman_sda10f_moveit_config`
+- `motoman_sda10f_support`
+- `motoman_sia10d_support`
+- `motoman_sia10f_support`
+- `motoman_sia20d_moveit_config`
+- `motoman_sia20d_support`
+- `motoman_sia5d_support`
+
+Version of package(s) in repository `motoman`:
+- upstream repository: https://github.com/ros-industrial/motoman.git
+- release repository: unknown
+- rosdistro version: `null`
+- old version: `null`
+- new version: `0.3.5-0`
+
+Versions of tools used:
+- bloom version: `0.5.20`
+- catkin_pkg version: `0.2.10`
+- rosdep version: `0.11.2`
+- rosdistro version: `0.4.4`
+- vcstools version: `0.1.37`
+
+
 ## motoman (hydro) - 0.3.3-1
 
 The packages in the `motoman` repository were released into the `hydro` distro by running `/usr/bin/bloom-release motoman -t hydro -r hydro` on `Wed, 28 May 2014 01:39:21 -0000`

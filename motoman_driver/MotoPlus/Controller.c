@@ -68,7 +68,7 @@ BOOL Ros_Controller_IsEStop(Controller* controller);
 BOOL Ros_Controller_IsWaitingRos(Controller* controller);
 int Ros_Controller_GetNotReadySubcode(Controller* controller);
 int Ros_Controller_StatusToMsg(Controller* controller, SimpleMsg* sendMsg);
-BOOL Ros_Controller_StatusRead(Controller* controller, USHORT ioStatus[IOSTATUS_MAX]);
+BOOL Ros_Controller_StatusRead(Controller* controller, USHORT ioStatus[IO_ROBOTSTATUS_MAX]);
 BOOL Ros_Controller_StatusUpdate(Controller* controller);
 // Wrapper around MPFunctions
 BOOL Ros_Controller_GetIOState(ULONG signal);
@@ -79,6 +79,22 @@ void Ros_Controller_ErrNo_ToString(int errNo, char errMsg[ERROR_MSG_MAX_SIZE], i
 //-----------------------
 // Function implementation
 //-----------------------
+
+//Report version info to display on pendant (DX200 only)
+void reportVersionInfoToController()
+{
+#ifdef DX200
+	MP_APPINFO_SEND_DATA appInfoSendData;
+	MP_STD_RSP_DATA stdResponseData;
+
+	sprintf(appInfoSendData.AppName, "MotoROS");
+
+	sprintf(appInfoSendData.Version, "v%s", APPLICATION_VERSION);
+	sprintf(appInfoSendData.Comment, "Motoman ROS-I driver");
+
+	mpApplicationInfoNotify(&appInfoSendData, &stdResponseData); //don't care about return value
+#endif
+}
 
 //-------------------------------------------------------------------
 // Initialize the controller structure
@@ -93,6 +109,8 @@ BOOL Ros_Controller_Init(Controller* controller)
 	
 	printf("Initializing controller\r\n");
 
+	reportVersionInfoToController();
+
 	// Turn off all I/O signal
 	Ros_Controller_SetIOState(IO_FEEDBACK_WAITING_MP_INCMOVE, FALSE);
 	Ros_Controller_SetIOState(IO_FEEDBACK_MP_INCMOVE_DONE, FALSE);
@@ -100,7 +118,17 @@ BOOL Ros_Controller_Init(Controller* controller)
 	Ros_Controller_SetIOState(IO_FEEDBACK_CONNECTSERVERRUNNING, FALSE);
 	Ros_Controller_SetIOState(IO_FEEDBACK_MOTIONSERVERCONNECTED, FALSE);
 	Ros_Controller_SetIOState(IO_FEEDBACK_STATESERVERCONNECTED, FALSE);
+	Ros_Controller_SetIOState(IO_FEEDBACK_RESERVED_0, FALSE);
 	Ros_Controller_SetIOState(IO_FEEDBACK_FAILURE, FALSE);
+	
+	Ros_Controller_SetIOState(IO_FEEDBACK_RESERVED_1, FALSE);
+	Ros_Controller_SetIOState(IO_FEEDBACK_RESERVED_2, FALSE);
+	Ros_Controller_SetIOState(IO_FEEDBACK_RESERVED_3, FALSE);
+	Ros_Controller_SetIOState(IO_FEEDBACK_RESERVED_4, FALSE);
+	Ros_Controller_SetIOState(IO_FEEDBACK_RESERVED_5, FALSE);
+	Ros_Controller_SetIOState(IO_FEEDBACK_RESERVED_6, FALSE);
+	Ros_Controller_SetIOState(IO_FEEDBACK_RESERVED_7, FALSE);
+	Ros_Controller_SetIOState(IO_FEEDBACK_RESERVED_8, FALSE);
 	
 	// Init variables and controller status
 	bInitOk = TRUE;
@@ -120,6 +148,9 @@ BOOL Ros_Controller_Init(Controller* controller)
 	
 	// Get the number of groups
 	controller->numGroup = GP_getNumberOfGroups();
+#ifdef DEBUG
+	printf("controller->numGroup = %d\n", controller->numGroup);
+#endif
 	if(controller->numGroup < 1)
 		bInitOk = FALSE;
 	
@@ -134,8 +165,7 @@ BOOL Ros_Controller_Init(Controller* controller)
 			controller->ctrlGroups[grpNo] = Ros_CtrlGroup_Create(grpNo, controller->interpolPeriod);
 			if(controller->ctrlGroups[grpNo] != NULL)
 			{
-				if(Ros_CtrlGroup_IsRobot(controller->ctrlGroups[grpNo]))
-					controller->numRobot++;
+				controller->numRobot++;  //This counter is required for DX100 controllers with two control-groups (robot OR ext axis)
 			}
 			else
 				bInitOk = FALSE;
@@ -143,6 +173,10 @@ BOOL Ros_Controller_Init(Controller* controller)
 		else
 			controller->ctrlGroups[grpNo] = NULL;
 	}
+
+#ifdef DEBUG
+	printf("controller->numRobot = %d\n", controller->numRobot);
+#endif
 	
 	// Initialize Thread ID and Socket to invalid value
 	controller->tidConnectionSrv = INVALID_TASK;
@@ -185,11 +219,13 @@ BOOL Ros_Controller_Init(Controller* controller)
 //------------------------------------------------------------------- 
 BOOL Ros_Controller_WaitInitReady(Controller* controller)
 {
-	while(Ros_Controller_IsAlarm(controller))
+	do  //minor alarms can be delayed briefly after bootup
 	{
-		mpTaskDelay(1000);
+		puts("Waiting for robot alarms to clear...");
+		mpTaskDelay(2500);
 		Ros_Controller_StatusRead(controller, controller->ioStatus);
-	}
+
+	}while(Ros_Controller_IsAlarm(controller));
 
 	return TRUE;
 }
@@ -346,78 +382,78 @@ closeSockHandle:
 //-------------------------------------------------------------------
 void Ros_Controller_StatusInit(Controller* controller)
 {
-	controller->ioStatusAddr[IOSTATUS_ALARM_MAJOR].ulAddr = 50010;		// Alarm
-	controller->ioStatusAddr[IOSTATUS_ALARM_MINOR].ulAddr = 50011;		// Alarm
-	controller->ioStatusAddr[IOSTATUS_ALARM_SYSTEM].ulAddr = 50012;		// Alarm
-	controller->ioStatusAddr[IOSTATUS_ALARM_USER].ulAddr = 50013;		// Alarm
-	controller->ioStatusAddr[IOSTATUS_ERROR].ulAddr = 50014;			// Error
-	controller->ioStatusAddr[IOSTATUS_PLAY].ulAddr = 50054;				// Play
-	controller->ioStatusAddr[IOSTATUS_TEACH].ulAddr = 50053;			// Teach
-	controller->ioStatusAddr[IOSTATUS_REMOTE].ulAddr = 80011; //50056;	// Remote  // Modified E.M. 7/9/2013
-	controller->ioStatusAddr[IOSTATUS_OPERATING].ulAddr = 50070;		// Operating
-	controller->ioStatusAddr[IOSTATUS_HOLD].ulAddr = 50071;				// Hold
-	controller->ioStatusAddr[IOSTATUS_SERVO].ulAddr = 50073;   			// Servo ON
-	controller->ioStatusAddr[IOSTATUS_ESTOP_EX].ulAddr = 80025;   		// External E-Stop
-	controller->ioStatusAddr[IOSTATUS_ESTOP_PP].ulAddr = 80026;   		// Pendant E-Stop
-	controller->ioStatusAddr[IOSTATUS_ESTOP_CTRL].ulAddr = 80027;   	// Controller E-Stop
-	controller->ioStatusAddr[IOSTATUS_WAITING_ROS].ulAddr = IO_FEEDBACK_WAITING_MP_INCMOVE; // Job input signaling ready for external motion
+	controller->ioStatusAddr[IO_ROBOTSTATUS_ALARM_MAJOR].ulAddr = 50010;		// Alarm
+	controller->ioStatusAddr[IO_ROBOTSTATUS_ALARM_MINOR].ulAddr = 50011;		// Alarm
+	controller->ioStatusAddr[IO_ROBOTSTATUS_ALARM_SYSTEM].ulAddr = 50012;		// Alarm
+	controller->ioStatusAddr[IO_ROBOTSTATUS_ALARM_USER].ulAddr = 50013;			// Alarm
+	controller->ioStatusAddr[IO_ROBOTSTATUS_ERROR].ulAddr = 50014;				// Error
+	controller->ioStatusAddr[IO_ROBOTSTATUS_PLAY].ulAddr = 50054;				// Play
+	controller->ioStatusAddr[IO_ROBOTSTATUS_TEACH].ulAddr = 50053;				// Teach
+	controller->ioStatusAddr[IO_ROBOTSTATUS_REMOTE].ulAddr = 80011; //50056;	// Remote  // Modified E.M. 7/9/2013
+	controller->ioStatusAddr[IO_ROBOTSTATUS_OPERATING].ulAddr = 50070;			// Operating
+	controller->ioStatusAddr[IO_ROBOTSTATUS_HOLD].ulAddr = 50071;				// Hold
+	controller->ioStatusAddr[IO_ROBOTSTATUS_SERVO].ulAddr = 50073;   			// Servo ON
+	controller->ioStatusAddr[IO_ROBOTSTATUS_ESTOP_EX].ulAddr = 80025;   		// External E-Stop
+	controller->ioStatusAddr[IO_ROBOTSTATUS_ESTOP_PP].ulAddr = 80026;   		// Pendant E-Stop
+	controller->ioStatusAddr[IO_ROBOTSTATUS_ESTOP_CTRL].ulAddr = 80027;   		// Controller E-Stop
+	controller->ioStatusAddr[IO_ROBOTSTATUS_WAITING_ROS].ulAddr = IO_FEEDBACK_WAITING_MP_INCMOVE; // Job input signaling ready for external motion
 	controller->alarmCode = 0;
 }
 
 
 BOOL Ros_Controller_IsAlarm(Controller* controller)
 {
-	return ((controller->ioStatus[IOSTATUS_ALARM_MAJOR]!=0) 
-		|| (controller->ioStatus[IOSTATUS_ALARM_MINOR]!=0)
-		|| (controller->ioStatus[IOSTATUS_ALARM_SYSTEM]!=0)
-		|| (controller->ioStatus[IOSTATUS_ALARM_USER]!=0) );
+	return ((controller->ioStatus[IO_ROBOTSTATUS_ALARM_MAJOR]!=0) 
+		|| (controller->ioStatus[IO_ROBOTSTATUS_ALARM_MINOR]!=0)
+		|| (controller->ioStatus[IO_ROBOTSTATUS_ALARM_SYSTEM]!=0)
+		|| (controller->ioStatus[IO_ROBOTSTATUS_ALARM_USER]!=0) );
 }
 
 BOOL Ros_Controller_IsError(Controller* controller)
 {
-	return ((controller->ioStatus[IOSTATUS_ERROR]!=0));
+	return ((controller->ioStatus[IO_ROBOTSTATUS_ERROR]!=0));
 }
 
 BOOL Ros_Controller_IsPlay(Controller* controller)
 {
-	return ((controller->ioStatus[IOSTATUS_PLAY]!=0));
+	return ((controller->ioStatus[IO_ROBOTSTATUS_PLAY]!=0));
 }
 
 BOOL Ros_Controller_IsTeach(Controller* controller)
 {
-	return ((controller->ioStatus[IOSTATUS_TEACH]!=0));
+	return ((controller->ioStatus[IO_ROBOTSTATUS_TEACH]!=0));
 }
 
 BOOL Ros_Controller_IsRemote(Controller* controller)
 {
-	return ((controller->ioStatus[IOSTATUS_REMOTE]!=0));
+	return ((controller->ioStatus[IO_ROBOTSTATUS_REMOTE]!=0));
 }
 
 BOOL Ros_Controller_IsOperating(Controller* controller)
 {
-	return ((controller->ioStatus[IOSTATUS_OPERATING]!=0));
+	return ((controller->ioStatus[IO_ROBOTSTATUS_OPERATING]!=0));
 }
 
 BOOL Ros_Controller_IsHold(Controller* controller)
 {
-	return ((controller->ioStatus[IOSTATUS_HOLD]!=0));
+	return ((controller->ioStatus[IO_ROBOTSTATUS_HOLD]!=0));
 }
 
 BOOL Ros_Controller_IsServoOn(Controller* controller)
 {
-	return ((controller->ioStatus[IOSTATUS_SERVO]!=0));
+	return ((controller->ioStatus[IO_ROBOTSTATUS_SERVO]!=0));
 }
 
 BOOL Ros_Controller_IsEStop(Controller* controller)
 {
-	return ((controller->ioStatus[IOSTATUS_ESTOP_EX]==0) 
-		|| (controller->ioStatus[IOSTATUS_ESTOP_PP]==0)
-		|| (controller->ioStatus[IOSTATUS_ESTOP_CTRL]==0) );
+	return ((controller->ioStatus[IO_ROBOTSTATUS_ESTOP_EX]==0) 
+		|| (controller->ioStatus[IO_ROBOTSTATUS_ESTOP_PP]==0)
+		|| (controller->ioStatus[IO_ROBOTSTATUS_ESTOP_CTRL]==0) );
 }
 
 BOOL Ros_Controller_IsWaitingRos(Controller* controller)
 {
-	return ((controller->ioStatus[IOSTATUS_WAITING_ROS]!=0));
+	return ((controller->ioStatus[IO_ROBOTSTATUS_WAITING_ROS]!=0));
 }
 
 BOOL Ros_Controller_IsMotionReady(Controller* controller)
@@ -426,8 +462,10 @@ BOOL Ros_Controller_IsMotionReady(Controller* controller)
 	if(controller->numRobot < 2)
 		return (controller->bRobotJobReady && controller->bSkillMotionReady[0]);
 	else
+	{
 		return (controller->bRobotJobReady && controller->bSkillMotionReady[0] && controller->bSkillMotionReady[1]);
-#else
+	}
+#elif (FS100 || DX200)
 	return (controller->bRobotJobReady);
 #endif
 }
@@ -511,9 +549,9 @@ int Ros_Controller_StatusToMsg(Controller* controller, SimpleMsg* sendMsg)
 //-------------------------------------------------------------------
 // Get I/O state on the controller
 //-------------------------------------------------------------------
-BOOL Ros_Controller_StatusRead(Controller* controller, USHORT ioStatus[IOSTATUS_MAX])
+BOOL Ros_Controller_StatusRead(Controller* controller, USHORT ioStatus[IO_ROBOTSTATUS_MAX])
 {
-	return (mpReadIO(controller->ioStatusAddr, ioStatus, IOSTATUS_MAX) == 0);
+	return (mpReadIO(controller->ioStatusAddr, ioStatus, IO_ROBOTSTATUS_MAX) == 0);
 }
 
 //-------------------------------------------------------------------
@@ -521,13 +559,13 @@ BOOL Ros_Controller_StatusRead(Controller* controller, USHORT ioStatus[IOSTATUS_
 //-------------------------------------------------------------------
 BOOL Ros_Controller_StatusUpdate(Controller* controller)
 {
-	USHORT ioStatus[IOSTATUS_MAX];
+	USHORT ioStatus[IO_ROBOTSTATUS_MAX];
 	int i;
 	
 	if(Ros_Controller_StatusRead(controller, ioStatus))
 	{
 		// Check for change of state and potentially react to the change
-		for(i=0; i<IOSTATUS_MAX; i++)
+		for(i=0; i<IO_ROBOTSTATUS_MAX; i++)
 		{
 			if(controller->ioStatus[i] != ioStatus[i])
 			{
@@ -536,25 +574,25 @@ BOOL Ros_Controller_StatusUpdate(Controller* controller)
 				controller->ioStatus[i] = ioStatus[i];
 				switch(i)
 				{
-					case IOSTATUS_ALARM_MAJOR: // alarm
-					case IOSTATUS_ALARM_MINOR: // alarm
-					case IOSTATUS_ALARM_SYSTEM: // alarm
-					case IOSTATUS_ALARM_USER: // alarm
+					case IO_ROBOTSTATUS_ALARM_MAJOR: // alarm
+					case IO_ROBOTSTATUS_ALARM_MINOR: // alarm
+					case IO_ROBOTSTATUS_ALARM_SYSTEM: // alarm
+					case IO_ROBOTSTATUS_ALARM_USER: // alarm
 					{
 						if(ioStatus[i] == 0)
 							controller->alarmCode = 0;
 						else
 							controller->alarmCode = Ros_Controller_GetAlarmCode();
 					}
-					//case IOSTATUS_ERROR: // error
+					//case IO_ROBOTSTATUS_ERROR: // error
 					//		if(ioStatus[i] != 0)
 					//		{
 					//			// Take action for alarm/error handling
 					//		}
 					//	break;
-					case IOSTATUS_REMOTE: // remote
-					case IOSTATUS_OPERATING: // operating
-					case IOSTATUS_WAITING_ROS: // Job input signaling ready for external motion
+					case IO_ROBOTSTATUS_REMOTE: // remote
+					case IO_ROBOTSTATUS_OPERATING: // operating
+					case IO_ROBOTSTATUS_WAITING_ROS: // Job input signaling ready for external motion
 					{
 						if(ioStatus[i] == 0)  // signal turned OFF
 						{
@@ -565,7 +603,7 @@ BOOL Ros_Controller_StatusUpdate(Controller* controller)
 						}
 						else // signal turned ON
 						{
-							if(i==IOSTATUS_WAITING_ROS)
+							if(i==IO_ROBOTSTATUS_WAITING_ROS)
 								controller->bRobotJobReadyRaised = TRUE;
 								
 							if(controller->bRobotJobReadyRaised
@@ -707,8 +745,6 @@ void Ros_Controller_ListenForSkill(Controller* controller, int sl)
 			if(strcmp(skillMsg.cmd, "ROS-START") == 0)
 			{
 				controller->bSkillMotionReady[sl - MP_SL_ID1] = TRUE;
-				if(Ros_Controller_IsMotionReady(controller))
-					printf("Robot job is ready for ROS commands.\r\n");
 			}
 			else if(strcmp(skillMsg.cmd, "ROS-STOP") == 0)
 			{
@@ -718,6 +754,12 @@ void Ros_Controller_ListenForSkill(Controller* controller, int sl)
 			{
 				printf ("MP_SKILL_SEND(SL_ID=%d) - %s \n", sl, skillMsg.cmd);
 			}
+#ifdef DEBUG
+			printf("controller->bSkillMotionReady[%d] = %d\n", (sl - MP_SL_ID1), controller->bSkillMotionReady[sl - MP_SL_ID1]);
+#endif
+
+			if(Ros_Controller_IsMotionReady(controller))
+				printf("Robot job is ready for ROS commands.\r\n");
 			break;
 			
 		case MP_SKILL_END:
@@ -729,3 +771,71 @@ void Ros_Controller_ListenForSkill(Controller* controller, int sl)
 }
 #endif
 
+
+#if DX100
+// VxWorks 5.5 do not have vsnprintf, use vsprintf instead...
+int vsnprintf(char *s, size_t sz, const char *fmt, va_list args)
+{
+	char tmpBuf[1024]; // Hopefully enough...
+	size_t res;
+	res = vsprintf(tmpBuf, fmt, args);
+	tmpBuf[sizeof(tmpBuf) - 1] = 0;  // be sure ending \0 is there
+	if (res >= sz)
+	{
+		// Buffer overrun... The shit is close to the fan
+		printf("Logging.. Error vsnprintf:%d max:%d, anyway:\r\n", (int)res, (int)sz);
+		printf("%s", tmpBuf);
+		res = -res;
+	}
+	strncpy(s, tmpBuf, sz);
+	s[sz - 1] = 0;  // be sure ending \0 is there
+	return res;
+}
+
+// VxWorks 5.5 do not have snprintf
+int snprintf(char *s, size_t sz, const char *fmt, ...)
+{
+	size_t res;
+	char tmpBuf[1024]; // Hopefully enough...
+	va_list va;
+
+	va_start(va, fmt);
+	res = vsnprintf(tmpBuf, sz, fmt, va);
+	va_end(va);
+
+	strncpy(s, tmpBuf, sz);
+	s[sz - 1] = 0;  // be sure ending \0 is there
+	return res;
+}
+#endif
+
+void motoRosAssert(BOOL mustBeTrue, ROS_ASSERTION_CODE subCodeIfFalse, char* msgFmtIfFalse, ...)
+{
+	const int MAX_MSG_LEN = 32;
+	char msg[MAX_MSG_LEN];
+	char subMsg[MAX_MSG_LEN];
+	va_list va;
+
+	if (!mustBeTrue)
+	{
+		memset(msg, 0x00, MAX_MSG_LEN);
+		memset(subMsg, 0x00, MAX_MSG_LEN);
+
+		va_start(va, msgFmtIfFalse);
+		vsnprintf(subMsg, MAX_MSG_LEN, msgFmtIfFalse, va);
+		va_end(va);
+
+		snprintf(msg, MAX_MSG_LEN, "MotoROS:%s", subMsg); //add "MotoROS" to distinguish from other controller alarms
+
+		Ros_Controller_SetIOState(IO_FEEDBACK_FAILURE, TRUE);
+		Ros_Controller_SetIOState(IO_FEEDBACK_INITIALIZATION_DONE, FALSE);
+
+		mpSetAlarm(8000, msg, subCodeIfFalse);
+
+		while (TRUE) //forever
+		{
+			puts(msg);
+			mpTaskDelay(5000);
+		}
+	}
+}

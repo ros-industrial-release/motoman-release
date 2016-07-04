@@ -98,38 +98,57 @@ void Ros_StateServer_StartNewConnection(Controller* controller, int sd)
 //-----------------------------------------------------------------------
 void Ros_StateServer_SendState(Controller* controller)
 {
-	BOOL bHasConnections = TRUE;
 	int groupNo;
 	SimpleMsg sendMsg;
-	int msgSize;
+	SimpleMsg sendMsgFEx;
+	int msgSize, fexMsgSize = 0;
+	BOOL bOkToSendExFeedback;
+	BOOL bHasConnections;
+	BOOL bSuccesfulSend;
 	
 	printf("Starting State Server Send State task\r\n");
 	printf("Controller number of group = %d\r\n", controller->numGroup);
 	
-	while(bHasConnections)
+	bHasConnections = FALSE;
+
+	//Thread for state server should never terminate
+	while(TRUE)
 	{
-		// Send position for each control group
+		Ros_SimpleMsg_JointFeedbackEx_Init(controller->numGroup, &sendMsgFEx);
+		bOkToSendExFeedback = TRUE;
+
+		// Send feedback position for each control group
 		for(groupNo=0; groupNo < controller->numGroup; groupNo++)
 		{
 			msgSize = Ros_SimpleMsg_JointFeedback(controller->ctrlGroups[groupNo], &sendMsg);
+			fexMsgSize = Ros_SimpleMsg_JointFeedbackEx_Build(groupNo, &sendMsg, &sendMsgFEx);
 			if(msgSize > 0)
 			{
-				bHasConnections = Ros_StateServer_SendMsgToAllClient(controller, &sendMsg, msgSize);
+				bSuccesfulSend = Ros_StateServer_SendMsgToAllClient(controller, &sendMsg, msgSize);
+				if (bSuccesfulSend != bHasConnections)
+				{
+					bHasConnections = bSuccesfulSend;
+					Ros_Controller_SetIOState(IO_FEEDBACK_STATESERVERCONNECTED, bHasConnections);
+				}
 			}
 			else
 			{
 				printf("Ros_SimpleMsg_JointFeedback returned a message size of 0\r\n");
+				bOkToSendExFeedback = FALSE;
 			}
 		}
 
+		if (controller->numGroup < 2) //only send the ROS_MSG_MOTO_JOINT_FEEDBACK_EX message if we have multiple control groups
+			bOkToSendExFeedback = FALSE;
+
+		if (bOkToSendExFeedback) //send extended-feedback message
+			Ros_StateServer_SendMsgToAllClient(controller, &sendMsgFEx, fexMsgSize);
+
 		// Send controller/robot status
-		if(bHasConnections)
+		msgSize = Ros_Controller_StatusToMsg(controller, &sendMsg);
+		if(msgSize > 0)
 		{
-			msgSize = Ros_Controller_StatusToMsg(controller, &sendMsg);
-			if(msgSize > 0)
-			{
-				bHasConnections = Ros_StateServer_SendMsgToAllClient(controller, &sendMsg, msgSize);
-			}
+			Ros_StateServer_SendMsgToAllClient(controller, &sendMsg, msgSize);
 		}
 		mpTaskDelay(STATE_UPDATE_MIN_PERIOD);
 	}
@@ -150,7 +169,7 @@ BOOL Ros_StateServer_SendMsgToAllClient(Controller* controller, SimpleMsg* sendM
 {
 	int index;
 	int ret;
-	BOOL bHasConnections = FALSE;
+	BOOL bSuccessfulSend = FALSE;
 	
 	// Check all active connections
 	for(index = 0; index < MAX_STATE_CONNECTIONS; index++)
@@ -166,9 +185,9 @@ BOOL Ros_StateServer_SendMsgToAllClient(Controller* controller, SimpleMsg* sendM
 			}
 			else
 			{
-				bHasConnections = TRUE;
+				bSuccessfulSend = TRUE;
 			}
 		}
 	}
-	return bHasConnections;
+	return bSuccessfulSend;
 }

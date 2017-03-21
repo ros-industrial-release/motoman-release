@@ -1,0 +1,38 @@
+ros-indigo-motoman-msgs (0.3.6-0trusty) trusty; urgency=high
+
+  * No changes
+
+ -- Thiago de Freitas <tdf@ipa.fhg.de>  Mon, 20 Mar 2017 05:00:00 -0000
+
+ros-indigo-motoman-msgs (0.3.5-0trusty) trusty; urgency=high
+
+  * No changes
+
+ -- Thiago de Freitas <tdf@ipa.fhg.de>  Sun, 03 Jul 2016 05:00:00 -0000
+
+ros-indigo-motoman-msgs (0.3.4-0trusty) trusty; urgency=high
+
+  * Support for multiple motion group control
+  * Contributors: thiagodefreitas
+
+ -- Thiago de Freitas <tdf@ipa.fhg.de>  Sun, 03 Jul 2016 05:00:00 -0000
+
+ros-indigo-motoman-msgs (0.3.3-0trusty) trusty; urgency=high
+
+
+
+ -- Thiago de Freitas <tdf@ipa.fhg.de>  Fri, 07 Feb 2014 06:00:00 -0000
+
+ros-indigo-motoman-msgs (0.3.2-0trusty) trusty; urgency=high
+
+
+
+ -- Thiago de Freitas <tdf@ipa.fhg.de>  Fri, 31 Jan 2014 06:00:00 -0000
+
+ros-indigo-motoman-msgs (0.3.1-0trusty) trusty; urgency=high
+
+
+
+ -- Thiago de Freitas <tdf@ipa.fhg.de>  Thu, 30 Jan 2014 06:00:00 -0000
+
+

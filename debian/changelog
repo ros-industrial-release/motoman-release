@@ -1,0 +1,62 @@
+ros-indigo-motoman-sia10d-support (0.3.7-0saucy) saucy; urgency=high
+
+  * No changes
+
+ --  <shaun.edwards@gmail.com>  Tue, 21 Mar 2017 05:00:00 -0000
+
+ros-indigo-motoman-sia10d-support (0.3.6-0saucy) saucy; urgency=high
+
+  * sia10: add 'base' coordinate frame to xacro. For #45 <https://github.com/ros-industrial/motoman/issues/45>.
+    This corresponds to the Motoman 'Robot Frame' (not the 'Base Frame'). This
+    frame has its origin at the intersection of the S axis and a horizontal
+    plane going through the L axis.
+    Note: the frame was added manually to the urdf, so the '.urdf' is still out
+    of sync with the xacro macro (issue #107 <https://github.com/ros-industrial/motoman/issues/107>).
+  * Fix for issue #104 <https://github.com/ros-industrial/motoman/issues/104>: fix incorrect joint limits in SIA10 urdf/xacro (#108 <https://github.com/ros-industrial/motoman/issues/108>)
+    * sia10: fix joint limits S, R & T. Fix #104 <https://github.com/ros-industrial/motoman/issues/104>.
+    This floors PI, instead of rounding. This makes the joint limits slightly
+    stricter than what is specced, but will avoid OOB errors on the controller.
+    * sia10: make all joint limits correspond to specsheet.
+    All values truncated after the 4th digit.
+  * Contributors: G.A. vd. Hoorn, gavanderhoorn
+
+ --  <shaun.edwards@gmail.com>  Mon, 20 Mar 2017 05:00:00 -0000
+
+ros-indigo-motoman-sia10d-support (0.3.5-0saucy) saucy; urgency=high
+
+  * No changes
+
+ --  <shaun.edwards@gmail.com>  Sun, 03 Jul 2016 05:00:00 -0000
+
+ros-indigo-motoman-sia10d-support (0.3.4-0saucy) saucy; urgency=high
+
+  * support: mark SIAx(d|f) pkgs as deprecated.
+    And point users to the 'motoman_sia_support' package, which will be
+    introduced in Jade.
+  * added missing prefix to links (batch replace)
+  * Contributors: Mathias Lüdtke, Shaun Edwards, gavanderhoorn, thiagodefreitas
+
+ --  <shaun.edwards@gmail.com>  Sun, 03 Jul 2016 05:00:00 -0000
+
+ros-indigo-motoman-sia10d-support (0.3.3-0saucy) saucy; urgency=high
+
+  * No changes
+
+ --  <shaun.edwards@gmail.com>  Fri, 07 Feb 2014 06:00:00 -0000
+
+ros-indigo-motoman-sia10d-support (0.3.2-0saucy) saucy; urgency=high
+
+  * Added build dependency on roslaunch to address missing roslaunch check missing macro
+  * Contributors: Shaun Edwards
+
+ --  <shaun.edwards@gmail.com>  Fri, 31 Jan 2014 06:00:00 -0000
+
+ros-indigo-motoman-sia10d-support (0.3.1-0saucy) saucy; urgency=high
+
+  * Synchronized versions for bloom release
+  * Added auto-generated sia10d, added urdf/meshes
+  * Contributors: Shaun Edwards
+
+ --  <shaun.edwards@gmail.com>  Thu, 30 Jan 2014 06:00:00 -0000
+
+

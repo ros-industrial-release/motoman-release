@@ -1,0 +1,54 @@
+ros-indigo-motoman-mh5-support (0.3.7-0saucy) saucy; urgency=high
+
+  * No changes
+
+ --  <shaun.edwards@gmail.com>  Tue, 21 Mar 2017 05:00:00 -0000
+
+ros-indigo-motoman-mh5-support (0.3.6-0saucy) saucy; urgency=high
+
+  * No changes
+
+ --  <shaun.edwards@gmail.com>  Mon, 20 Mar 2017 05:00:00 -0000
+
+ros-indigo-motoman-mh5-support (0.3.5-0saucy) saucy; urgency=high
+
+  * No changes
+
+ --  <shaun.edwards@gmail.com>  Sun, 03 Jul 2016 05:00:00 -0000
+
+ros-indigo-motoman-mh5-support (0.3.4-0saucy) saucy; urgency=high
+
+  * Fixed roslaunch test issues
+  * mh5: remove 'solid' from binary visual meshes. Fix #60 <https://github.com/shaun-edwards/motoman/issues/60>.
+    Also removes executable bit (not needed).
+  * Added comment with old joint limits and explanation.
+  * Reduced joint_u limits to values measured from an MH5F.
+  * Reversed MH5 base mesh.  Was on backwards.
+  * New concave meshes.  Visuals are full-res, collisions are decimated.
+  * added missing prefix to links (batch replace)
+  * Contributors: Dave Hershberger, David Hershberger, Mathias Lüdtke, Shaun Edwards, gavanderhoorn, thiagodefreitas
+
+ --  <shaun.edwards@gmail.com>  Sun, 03 Jul 2016 05:00:00 -0000
+
+ros-indigo-motoman-mh5-support (0.3.3-0saucy) saucy; urgency=high
+
+  * No changes
+
+ --  <shaun.edwards@gmail.com>  Fri, 07 Feb 2014 06:00:00 -0000
+
+ros-indigo-motoman-mh5-support (0.3.2-0saucy) saucy; urgency=high
+
+  * Added build dependency on roslaunch to address missing roslaunch check missing macro
+  * Contributors: Shaun Edwards
+
+ --  <shaun.edwards@gmail.com>  Fri, 31 Jan 2014 06:00:00 -0000
+
+ros-indigo-motoman-mh5-support (0.3.1-0saucy) saucy; urgency=high
+
+  * Synchronized versions for bloom release
+  * Generated mh5 and created required urdfs/meshes
+  * Contributors: Shaun Edwards
+
+ --  <shaun.edwards@gmail.com>  Thu, 30 Jan 2014 06:00:00 -0000
+
+

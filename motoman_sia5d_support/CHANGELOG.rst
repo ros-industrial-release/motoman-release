@@ -2,6 +2,10 @@
 Changelog for package motoman_sia5d_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.3.7 (2017-03-21)
+------------------
+* No changes
+
 0.3.6 (2017-03-20)
 ------------------
 * sia5: add 'base' coordinate frame to xacro. For `#45 <https://github.com/ros-industrial/motoman/issues/45>`_.
